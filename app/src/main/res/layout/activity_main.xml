@@ -7,7 +7,8 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity"
     android:orientation="vertical"
-    android:gravity="center_horizontal">
+    android:gravity="center_horizontal"
+    android:padding="50sp">
 
     <TextView
         android:id="@+id/main_TXT_Login"
@@ -21,7 +22,7 @@
 
 
 
-    <com.google.android.material.textview.MaterialTextView
+    <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/main_TXT_password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -31,7 +32,8 @@
             android:textColor="@color/black"
             android:textColorHint="@color/gray"
             android:textColorHighlight="@color/black"
-            android:textCursorDrawable="@color/black"/>
+            android:textCursorDrawable="@color/black"
+            android:paddingTop="20sp"/>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/main_BTN_click"
