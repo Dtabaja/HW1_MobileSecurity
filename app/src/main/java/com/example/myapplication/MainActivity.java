@@ -23,18 +23,24 @@ public class MainActivity extends AppCompatActivity {
 // Variables for phone's button.
 private MaterialButton main_BTN_click;
 
+    // Variable for sensors.
     private SensorManager sensorManager;
     private Sensor tiltSensor;
+    private Sensor stepCounterSensor;
     private SensorEventListener sensorEventListener;
 
     // Variables for phone's brightness case.
-    private int curBrigthLight;
+    private int currentBrigthLight;
     private final int MAX_LIGHT = 255;
 
     // Variable for tilt sensor.
     private double xTilt = 0;
-    private float[] gData = new float[3], mData = new float[3],
-            rMat = new float[9], iMat = new float[9], orientation = new float[3];
+    private float[] gData = new float[3];
+
+    // Variables for step counter sensor.
+    private float stepCounter = 0, initialStepCounter = 0;
+    private boolean firstStep = true;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,9 +48,12 @@ private MaterialButton main_BTN_click;
         getSupportActionBar().hide();
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
+
         main_BTN_click = findViewById(R.id.main_BTN_click);
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         tiltSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        stepCounterSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
+
 
         sensorEventListener = new SensorEventListener() {
             @Override
@@ -52,6 +61,13 @@ private MaterialButton main_BTN_click;
                 if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
                     xTilt = sensorEvent.values[0];
                     gData = sensorEvent.values.clone();
+                }
+                if (sensorEvent.sensor.getType() == Sensor.TYPE_STEP_COUNTER) {
+                    if (firstStep) {
+                        initialStepCounter = sensorEvent.values[0];
+                        firstStep = false;
+                    }
+                    stepCounter = sensorEvent.values[0] - initialStepCounter;
                 }
             }
             @Override
@@ -66,18 +82,21 @@ main_BTN_click.setOnClickListener(new View.OnClickListener() {
     public void onClick(View v) {
         registerTheTilt();
 
-        // If the bright or the  is on the max level it will sign in.
+        // If the bright or the  is on the max level it will sign in or
+        // if  the phone in tilt to the left or
+        // If you make more then 5 steps.
         try {
-            curBrigthLight = Settings.System.getInt(getContentResolver(), Settings.System.SCREEN_BRIGHTNESS);
+            currentBrigthLight = Settings.System.getInt(getContentResolver(), Settings.System.SCREEN_BRIGHTNESS);
         } catch (Settings.SettingNotFoundException e) {
             e.printStackTrace();
         }
-        if(curBrigthLight == MAX_LIGHT|| (xTilt > 3 && xTilt < 10)){
+        if(currentBrigthLight == MAX_LIGHT|| (xTilt > 3 && xTilt < 10 || stepCounter > 5)){
             Toast.makeText(MainActivity.this, "Login Successfully!", Toast.LENGTH_LONG).show();
             Intent intent = new Intent(MainActivity.this, LoginSuccessful.class);
             startActivity(intent);
 
         }
+
 
         else{
             Toast.makeText(MainActivity.this,"Login failed!", Toast.LENGTH_LONG).show();
@@ -90,6 +109,8 @@ main_BTN_click.setOnClickListener(new View.OnClickListener() {
     }
     private void registerTheTilt(){
         sensorManager.registerListener(sensorEventListener, tiltSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(sensorEventListener, stepCounterSensor, SensorManager.SENSOR_DELAY_NORMAL);
+
     }
 
 }
